@@ -1,0 +1,45 @@
+version: "3"
+services:
+  #PHP Service
+  qr_app:
+    build:
+      context: .
+      dockerfile: app.docker
+    image: digitalocean.com/php
+    container_name: qr_app
+    working_dir: /var/www
+    volumes:
+      - ../:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - qr-network
+
+  #Nginx Service
+  qr_web:
+    build:
+      context: ./
+      dockerfile: web.docker
+    container_name: qr_web
+    ports:
+      - "8383:80"
+    volumes:
+      - ../:/var/www
+    networks:
+      - qr-network
+  # MySQL Service
+  qr_mysql:
+    image: mysql:5.6
+    container_name: qr_mysql
+    ports:
+      - "33061:3306"
+    environment:
+      MYSQL_DATABASE: qr_data
+      MYSQL_ROOT_PASSWORD: password
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - qr-network
+#Docker Networks
+networks:
+  qr-network:
+    driver: bridge
